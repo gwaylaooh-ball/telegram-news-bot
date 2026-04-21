@@ -3,17 +3,14 @@ import telebot
 import feedparser
 import google.generativeai as genai
 
-# Environment Variables ယူခြင်း
 BOT_TOKEN = os.environ.get('BOT_TOKEN')
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
 
-# Gemini ကို Configure လုပ်ခြင်း
 genai.configure(api_key=GEMINI_API_KEY)
 model = genai.GenerativeModel('models/gemini-1.5-flash')
 
 bot = telebot.TeleBot(BOT_TOKEN)
 
-# RSS Feeds URLs
 TECH_FEED = "https://feeds.feedburner.com/TechCrunch/"
 MYANMAR_FEED = "https://www.bbc.com/burmese/index.xml"
 
@@ -21,7 +18,6 @@ def translate_and_tip(text):
     try:
         prompt = f"Translate this tech news to Myanmar language clearly. Also, provide a short useful AI tool tip at the end in Myanmar: {text}"
         response = model.generate_content(prompt)
-        # ဒီစာကြောင်းရဲ့ အရှေ့မှာ space ၈ ခုပဲ ရှိရပါမယ်
         if response and hasattr(response, 'text'):
             return response.text
         return "⚠️ ဘာသာပြန်ဆိုချက် မရရှိနိုင်ပါ။"
