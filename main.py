@@ -1,34 +1,60 @@
 import os
+import telebot
 import feedparser
 import google.generativeai as genai
 
-from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
+# Environment Variables များရယူခြင်း
+BOT_TOKEN = os.environ.get('BOT_TOKEN')
+GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
 
-# === Telegram Token (direct) ===
-TOKEN = "8579322843:AAEvVt7yUHeWquXPNisfHJJuVJ5aJwuX5Tw"
-
-# === Gemini API key (from environment variable) ===
-GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
-
-# === RSS Feeds ===
-TECH_FEED = "https://feeds.feedburner.com/TechCrunch"
-MYANMAR_FEED = "https://rss.app/feeds/AmeVJCd8XByk6J6R.xml"
-
-# === Gemini setup ===
+# Gemini AI ကို Configure လုပ်ခြင်း
 genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel("gemini-1.5-flash-latest")
+model = genai.GenerativeModel('gemini-1.5-flash')
 
+bot = telebot.TeleBot(BOT_TOKEN)
 
-# === Translate function ===
-def translate_to_myanmar(text):
-    try:
-        prompt = f"""Translate this news title into natural Burmese.
-Return Burmese only.
-Do not explain.
-Text: {text}"""
+# RSS Feeds URLs
+TECH_FEED = "https://feeds.feedburner.com/TechCrunch/"
+MYANMAR_FEED = "https://www.bbc.com/burmese/index.xml"
 
-        response = model.generate_content(prompt)
+# Gemini သုံးပြီး ဘာသာပြန်ပေးမည့် function
+def translate_and_tip(text):
+    prompt = f"Translate this tech news to Myanmar language clearly. Also, provide a short useful AI tool tip at the end in Myanmar: {text}"
+    response = model.generate_content(prompt)
+    return response.text
+
+@bot.message_handler(commands=['start'])
+def send_welcome(message):
+    bot.reply_to(message, "မင်္ဂလာပါ။\n/tech - နည်းပညာသတင်းများ\n/myanmar - မြန်မာသတင်းများ")
+
+@bot.message_handler(commands=['tech'])
+def get_tech_news(message):
+    bot.send_chat_action(message.chat.id, 'typing')
+    feed = feedparser.parse(TECH_FEED)
+    
+    # နောက်ဆုံးရ သတင်း ၃ ပုဒ်ကို ယူမယ်
+    news_update = ""
+    for entry in feed.entries[:3]:
+        news_update += f"🔹 {entry.title}\n"
+    
+    # Gemini နဲ့ ဘာသာပြန်မယ် + AI Tip ယူမယ်
+    result = translate_and_tip(news_update)
+    bot.reply_to(message, f"📢 **နည်းပညာသတင်းနှင့် AI လက်ဆောင်**\n\n{result}")
+
+@bot.message_handler(commands=['myanmar'])
+def get_myanmar_news(message):
+    bot.send_chat_action(message.chat.id, 'typing')
+    feed = feedparser.parse(MYANMAR_FEED)
+    
+    msg = "🇲🇲 **မြန်မာသတင်းများ**\n\n"
+    for entry in feed.entries[:5]:
+        msg += f"📌 {entry.title}\n🔗 {entry.link}\n\n"
+    
+    bot.reply_to(message, msg)
+
+# Bot ကို စတင် run ခြင်း
+print("Bot is running...")
+bot.infinity_polling()
 
         if response and hasattr(response, "text") and response.text:
             return response.text.strip()
