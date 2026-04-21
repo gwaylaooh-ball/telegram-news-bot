@@ -5,7 +5,7 @@ import google.generativeai as genai
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 
-TOKEN = os.environ.get("8579322843:AAH6KXxO0kEcykE6U5-c96-fA0IvODEQwqk")
+TOKEN = os.environ.get("BOT_TOKEN")
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 
 TECH_FEED = "https://feeds.feedburner.com/TechCrunch"
