@@ -36,4 +36,12 @@ app.add_handler(CommandHandler("start", start))
 app.add_handler(CommandHandler("tech", tech))
 app.add_handler(CommandHandler("myanmar", myanmar))
 
-app.run_polling()
+import os
+
+PORT = int(os.environ.get("PORT", 10000))
+
+app.run_webhook(
+    listen="0.0.0.0",
+    port=PORT,
+    webhook_url="https://telegram-news-bot-jrn9.onrender.com"
+)
