@@ -17,7 +17,7 @@ MYANMAR_FEED = "https://rss.app/feeds/AmeVJCd8XByk6J6R.xml"
 
 # === Gemini setup ===
 genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel("gemini-1.5-flash")
+model = genai.GenerativeModel("gemini-1.5-flash-latest")
 
 
 # === Translate function ===
@@ -26,8 +26,8 @@ def translate_to_myanmar(text):
         prompt = f"Translate this into natural Burmese language only:\n{text}"
         response = model.generate_content(prompt)
         return response.text.strip()
-    except Exception:
-        return text
+   except Exception as e:
+    return f"TRANSLATE ERROR: {e}"
 
 
 # === Get news function ===
