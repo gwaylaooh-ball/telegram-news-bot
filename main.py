@@ -23,7 +23,7 @@ model = genai.GenerativeModel("gemini-1.5-flash-latest")
 # === Translate function ===
 def translate_to_myanmar(text):
     try:
-        prompt = f"Translate this into natural Burmese language only:\n{text}"
+        prompt = f"Translate the following news title into Burmese language:\n{text}"
         response = model.generate_content(prompt)
         return response.text.strip()
    except Exception as e:
