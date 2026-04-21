@@ -23,21 +23,29 @@ model = genai.GenerativeModel("gemini-1.5-flash-latest")
 # === Translate function ===
 def translate_to_myanmar(text):
     try:
-        prompt = f"Translate the following news title into Burmese language:\n{text}"
+        prompt = f"""Translate this news title into natural Burmese.
+Return Burmese only.
+Do not explain.
+Text: {text}"""
+
         response = model.generate_content(prompt)
-        return response.text.strip()
-   except Exception as e:
-    return f"TRANSLATE ERROR: {e}"
+
+        if response and hasattr(response, "text") and response.text:
+            return response.text.strip()
+
+        return f"TRANSLATE ERROR: empty response"
+
+    except Exception as e:
+        return f"TRANSLATE ERROR: {str(e)}"
 
 
-# === Get news function ===
 def get_feed_news(feed_url, limit=3):
     feed = feedparser.parse(feed_url)
     news = ""
 
     for entry in feed.entries[:limit]:
-        title = translate_to_myanmar(entry.title)
-        news += f"📰 {title}\n{entry.link}\n\n"
+        translated_title = translate_to_myanmar(entry.title)
+        news += f"📰 {translated_title}\n{entry.link}\n\n"
 
     return news if news else "No news found."
 
