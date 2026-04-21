@@ -2,9 +2,28 @@ import os
 import telebot
 import feedparser
 import google.generativeai as genai
+import threading
+from http.server import BaseHTTPRequestHandler, HTTPServer
+
+class DummyHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header('Content-type', 'text/plain')
+        self.end_headers()
+        self.wfile.write(b"Bot is running successfully!")
+
+def run_dummy_server():
+    port = int(os.environ.get('PORT', 10000))
+    server = HTTPServer(('0.0.0.0', port), DummyHandler)
+    print(f"Dummy web server running on port {port}...")
+    server.serve_forever()
 
 BOT_TOKEN = os.environ.get('BOT_TOKEN')
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
+
+if not BOT_TOKEN or not GEMINI_API_KEY:
+    print("ERROR: BOT_TOKEN or GEMINI_API_KEY missing.")
+    exit(1)
 
 genai.configure(api_key=GEMINI_API_KEY)
 model = genai.GenerativeModel('models/gemini-1.5-flash')
@@ -50,5 +69,6 @@ def get_myanmar_news(message):
     bot.reply_to(message, msg)
 
 if __name__ == "__main__":
-    print("Bot is running...")
+    threading.Thread(target=run_dummy_server, daemon=True).start()
+    print("Telegram Bot is starting...")
     bot.infinity_polling()
