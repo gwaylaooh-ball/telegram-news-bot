@@ -7,7 +7,7 @@ import google.generativeai as genai
 BOT_TOKEN = os.environ.get('BOT_TOKEN')
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
 
-# Gemini ကို Configure လုပ်ခြင်း (Model နာမည်ကို သေချာအောင် models/ ထည့်ထားပါတယ်)
+# Gemini ကို Configure လုပ်ခြင်း
 genai.configure(api_key=GEMINI_API_KEY)
 model = genai.GenerativeModel('models/gemini-1.5-flash')
 
@@ -21,7 +21,7 @@ def translate_and_tip(text):
     try:
         prompt = f"Translate this tech news to Myanmar language clearly. Also, provide a short useful AI tool tip at the end in Myanmar: {text}"
         response = model.generate_content(prompt)
-        # ဒီနေရာမှာ Indent (ကွက်လပ်) မှန်ဖို့ အရမ်းအရေးကြီးပါတယ်
+        # ဒီစာကြောင်းရဲ့ အရှေ့မှာ space ၈ ခုပဲ ရှိရပါမယ်
         if response and hasattr(response, 'text'):
             return response.text
         return "⚠️ ဘာသာပြန်ဆိုချက် မရရှိနိုင်ပါ။"
@@ -53,7 +53,6 @@ def get_myanmar_news(message):
         msg += f"📌 {entry.title}\n🔗 {entry.link}\n\n"
     bot.reply_to(message, msg)
 
-# Bot စတင်ခြင်း
 if __name__ == "__main__":
     print("Bot is running...")
     bot.infinity_polling()
