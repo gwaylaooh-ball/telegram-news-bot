@@ -15,14 +15,12 @@ class DummyHandler(BaseHTTPRequestHandler):
 def run_dummy_server():
     port = int(os.environ.get('PORT', 10000))
     server = HTTPServer(('0.0.0.0', port), DummyHandler)
-    print(f"Dummy web server running on port {port}...")
     server.serve_forever()
 
 BOT_TOKEN = os.environ.get('BOT_TOKEN')
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
 
 if not BOT_TOKEN or not GEMINI_API_KEY:
-    print("ERROR: BOT_TOKEN or GEMINI_API_KEY missing.")
     exit(1)
 
 genai.configure(api_key=GEMINI_API_KEY)
@@ -40,8 +38,7 @@ def translate_and_tip(text):
         if response and hasattr(response, 'text'):
             return response.text
         return "⚠️ ဘာသာပြန်ဆိုချက် မရရှိနိုင်ပါ။"
-    except Exception as e:
-        print(f"Gemini Error: {e}")
+    except Exception:
         return "⚠️ Gemini API Error တက်နေပါသည်။"
 
 @bot.message_handler(commands=['start'])
@@ -70,5 +67,4 @@ def get_myanmar_news(message):
 
 if __name__ == "__main__":
     threading.Thread(target=run_dummy_server, daemon=True).start()
-    print("Telegram Bot is starting...")
     bot.infinity_polling()
