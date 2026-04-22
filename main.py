@@ -1,7 +1,7 @@
 import os
 import telebot
 import feedparser
-import google.generativeai as genai
+from google import genai
 import threading
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
@@ -17,15 +17,15 @@ def run_dummy_server():
     server = HTTPServer(('0.0.0.0', port), DummyHandler)
     server.serve_forever()
 
+threading.Thread(target=run_dummy_server, daemon=True).start()
+
 BOT_TOKEN = os.environ.get('BOT_TOKEN')
 GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY')
 
 if not BOT_TOKEN or not GEMINI_API_KEY:
     exit(1)
 
-genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel('models/gemini-1.5-flash')
-
+client = genai.Client(api_key=GEMINI_API_KEY)
 bot = telebot.TeleBot(BOT_TOKEN)
 
 TECH_FEED = "https://feeds.feedburner.com/TechCrunch/"
@@ -33,9 +33,11 @@ MYANMAR_FEED = "https://www.bbc.com/burmese/index.xml"
 
 def translate_and_tip(text):
     try:
-        prompt = f"Translate this tech news to Myanmar language clearly. Also, provide a short useful AI tool tip at the end in Myanmar: {text}"
-        response = model.generate_content(prompt)
-        if response and hasattr(response, 'text'):
+        response = client.models.generate_content(
+            model='gemini-1.5-flash',
+            contents=f"Translate this tech news to Myanmar language clearly. Also, provide a short useful AI tool tip at the end in Myanmar: {text}"
+        )
+        if response and response.text:
             return response.text
         return "⚠️ ဘာသာပြန်ဆိုချက် မရရှိနိုင်ပါ။"
     except Exception:
@@ -66,5 +68,4 @@ def get_myanmar_news(message):
     bot.reply_to(message, msg)
 
 if __name__ == "__main__":
-    threading.Thread(target=run_dummy_server, daemon=True).start()
     bot.infinity_polling()
